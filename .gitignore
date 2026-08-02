@@ -1,0 +1,58 @@
+# ==========================================
+# Python & Bytecode Cache
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv/
+venv/
+ENV/
+.env
+# Note: Un-ignore source package 'env' inside ACO_ML
+!**/env/__init__.py
+!**/env/*.py
+
+# ==========================================
+# IDEs & Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# ==========================================
+# ML/RL Model Checkpoints & Logs
+# (Bỏ comment các dòng dưới nếu bạn KHÔNG muốn commit mô hình/kết quả)
+# ==========================================
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.h5
+*.pkl
+*.log
+# checkpoints/
+# plots/
+
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Streamlit & Local Configurations
+# ==========================================
+.streamlit/secrets.toml
