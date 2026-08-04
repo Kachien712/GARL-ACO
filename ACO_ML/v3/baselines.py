@@ -39,6 +39,7 @@ def run_fixed_aco(
         dynamic_env.reset()
         
     convergence_curve = []
+    iter_best_curve = []
     param_trajectory = []
     
     for it in range(1, n_iter + 1):
@@ -48,6 +49,7 @@ def run_fixed_aco(
             
         iter_best = aco.step()
         convergence_curve.append(aco.best_length)
+        iter_best_curve.append(iter_best)
         param_trajectory.append((alpha, beta, rho))
         
     return {
@@ -55,8 +57,10 @@ def run_fixed_aco(
         "best_length": aco.best_length,
         "best_tour": aco.best_tour,
         "convergence_curve": convergence_curve,
+        "iter_best_curve": iter_best_curve,
         "param_trajectory": param_trajectory,
     }
+
 
 def run_ql_aco(
     instance: TSPInstance,
@@ -78,6 +82,7 @@ def run_ql_aco(
         dynamic_env.reset()
         
     convergence_curve = []
+    iter_best_curve = []
     param_trajectory = []
     
     aco_stats = aco.get_search_stats()
@@ -92,6 +97,7 @@ def run_ql_aco(
             
         iter_best = aco.step()
         convergence_curve.append(aco.best_length)
+        iter_best_curve.append(iter_best)
         param_trajectory.append((aco.alpha, aco.beta, aco.rho))
         
         # Decision step every control_freq iterations
@@ -106,6 +112,7 @@ def run_ql_aco(
         "best_length": aco.best_length,
         "best_tour": aco.best_tour,
         "convergence_curve": convergence_curve,
+        "iter_best_curve": iter_best_curve,
         "param_trajectory": param_trajectory,
     }
 
@@ -136,6 +143,7 @@ def run_ddpg_aco(
         }
         
     convergence_curve = []
+    iter_best_curve = []
     param_trajectory = []
     
     aco_stats = aco.get_search_stats()
@@ -153,6 +161,7 @@ def run_ddpg_aco(
             
         iter_best = aco.step()
         convergence_curve.append(aco.best_length)
+        iter_best_curve.append(iter_best)
         param_trajectory.append((aco.alpha, aco.beta, aco.rho))
         
         # Decision step every control_freq iterations
@@ -168,5 +177,7 @@ def run_ddpg_aco(
         "best_length": aco.best_length,
         "best_tour": aco.best_tour,
         "convergence_curve": convergence_curve,
+        "iter_best_curve": iter_best_curve,
         "param_trajectory": param_trajectory,
     }
+

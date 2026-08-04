@@ -23,28 +23,45 @@ from ACO_ML.v3.agent.ql_agent import QLearningAgent
 from ACO_ML.v3.baselines import run_fixed_aco, run_ql_aco, run_ddpg_aco
 
 def compute_recovery_iterations(
-    convergence_curve: list,
-    perturb_step: int,
+    iter_best_curve: list,
+    perturb_step: int = 30,
     recovery_threshold_ratio: float = 1.05
-) -> float:
+):
     """
-    Measures iterations required to recover tour quality after graph perturbation at perturb_step.
+    Recovery Metric Definition:
+    The number of ACO iterations required, starting from a perturbation event at step `perturb_step`,
+    for the iteration-best tour length to return to within X% (default recovery_threshold_ratio = 1.05, i.e., 5%)
+    of the pre-perturbation baseline tour length.
     
-    If no recovery occurs within the remaining iterations, returns float('inf') to cleanly distinguish 
-    unrecovered runs from measured numerical recoveries.
+    If the tour length does not return to within the threshold before the end of the evaluation window,
+    the run is marked as unrecovered (returns None).
     """
-    if perturb_step >= len(convergence_curve):
+    if iter_best_curve is None or len(iter_best_curve) <= perturb_step:
+        return None
+        
+    # Pre-perturbation baseline (average of up to 5 steps prior to perturbation)
+    start_idx = max(0, perturb_step - 5)
+    pre_perturb_baseline = float(np.mean(iter_best_curve[start_idx:perturb_step]))
+    target_length = pre_perturb_baseline * recovery_threshold_ratio
+    
+    # Check if perturbation caused a performance drop (spike in iteration tour length)
+    spike_detected = False
+    for idx in range(perturb_step, len(iter_best_curve)):
+        if iter_best_curve[idx] > target_length:
+            spike_detected = True
+            break
+            
+    # If no performance drop above threshold occurred after perturbation, recovery is 0.0 (already optimal)
+    if not spike_detected:
         return 0.0
         
-    pre_perturb_length = convergence_curve[perturb_step - 1]
-    target_length = pre_perturb_length * recovery_threshold_ratio
-    
-    for idx in range(perturb_step, len(convergence_curve)):
-        if convergence_curve[idx] <= target_length:
+    # Find iteration where tour length recovers back to <= target_length after spike
+    for idx in range(perturb_step, len(iter_best_curve)):
+        if iter_best_curve[idx] <= target_length:
             return float(idx - perturb_step + 1)
             
-    # Explicit unrecovered marker (infinity)
-    return float('inf')
+    # Explicit unrecovered marker (None)
+    return None
 
 def evaluate_benchmark(
     n_iter: int = DEFAULT_N_ITER,
@@ -106,7 +123,7 @@ def evaluate_benchmark(
             # 1. Fixed ACO
             fixed_res = run_fixed_aco(instance, n_iter=n_iter, dynamic_env=dynamic_env, seed=seed)
             gap_fixed = get_gap(fixed_res["best_length"], inst_name)
-            rec_fixed = compute_recovery_iterations(fixed_res["convergence_curve"], perturb_step=30)
+            rec_fixed = compute_recovery_iterations(fixed_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
             inst_results["Fixed ACO"]["tour_lengths"].append(fixed_res["best_length"])
             inst_results["Fixed ACO"]["gaps"].append(gap_fixed)
             inst_results["Fixed ACO"]["curves"].append(fixed_res["convergence_curve"])
@@ -115,7 +132,7 @@ def evaluate_benchmark(
             # 2. ACO + Q-Learning
             ql_res = run_ql_aco(instance, ql_agent, n_iter=n_iter, dynamic_env=dynamic_env, evaluate=True, seed=seed)
             gap_ql = get_gap(ql_res["best_length"], inst_name)
-            rec_ql = compute_recovery_iterations(ql_res["convergence_curve"], perturb_step=30)
+            rec_ql = compute_recovery_iterations(ql_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
             inst_results["ACO + Q-Learning"]["tour_lengths"].append(ql_res["best_length"])
             inst_results["ACO + Q-Learning"]["gaps"].append(gap_ql)
             inst_results["ACO + Q-Learning"]["curves"].append(ql_res["convergence_curve"])
@@ -124,7 +141,7 @@ def evaluate_benchmark(
             # 3. ACO + DDPG (Strictly Deterministic actor, add_noise=False inside evaluate=True)
             ddpg_res = run_ddpg_aco(instance, ddpg_agent, n_iter=n_iter, dynamic_env=dynamic_env, evaluate=True, seed=seed)
             gap_ddpg = get_gap(ddpg_res["best_length"], inst_name)
-            rec_ddpg = compute_recovery_iterations(ddpg_res["convergence_curve"], perturb_step=30)
+            rec_ddpg = compute_recovery_iterations(ddpg_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
             inst_results["ACO + DDPG"]["tour_lengths"].append(ddpg_res["best_length"])
             inst_results["ACO + DDPG"]["gaps"].append(gap_ddpg)
             inst_results["ACO + DDPG"]["curves"].append(ddpg_res["convergence_curve"])
@@ -132,9 +149,9 @@ def evaluate_benchmark(
             inst_results["ACO + DDPG"]["recovery_iters"].append(rec_ddpg)
             
         # Print summary for this instance
-        print("-" * 65)
-        print(f"Method              | Mean Tour Length    | Mean Gap %        | Std Gap %")
-        print("-" * 65)
+        print("-" * 85)
+        print(f"{'Method':19s} | {'Mean Tour Length':17s} | {'Mean Gap %':11s} | {'Std Gap %':9s} | {'Recovery Metric':20s}")
+        print("-" * 85)
         for method in ["Fixed ACO", "ACO + Q-Learning", "ACO + DDPG"]:
             mean_len = float(np.mean(inst_results[method]["tour_lengths"]))
             mean_gap = float(np.mean(inst_results[method]["gaps"]))
@@ -142,13 +159,19 @@ def evaluate_benchmark(
             
             # Handle recovery metric cleanly
             rec_list = inst_results[method]["recovery_iters"]
-            valid_recs = [r for r in rec_list if r != float('inf')]
+            valid_recs = [r for r in rec_list if r is not None]
             unrec_cnt = len(rec_list) - len(valid_recs)
-            rec_str = f"{np.mean(valid_recs):.1f} iters" if valid_recs else "Unrecovered"
-            if unrec_cnt > 0:
-                rec_str += f" ({unrec_cnt}/{len(rec_list)} unrecovered)"
+            
+            if len(valid_recs) > 0:
+                mean_rec_str = f"{np.mean(valid_recs):.1f} iters"
+                if unrec_cnt > 0:
+                    rec_str = f"{mean_rec_str} ({unrec_cnt}/{len(rec_list)} unrecovered)"
+                else:
+                    rec_str = f"{mean_rec_str} (0 unrecovered)"
+            else:
+                rec_str = f"Unrecovered ({unrec_cnt}/{len(rec_list)})"
                 
-            print(f"{method:19s} | {mean_len:17.1f} | {mean_gap:15.2f}% | {std_gap:8.2f}% | Rec: {rec_str}")
+            print(f"{method:19s} | {mean_len:17.1f} | {mean_gap:10.2f}% | {std_gap:8.2f}% | {rec_str}")
             
         results_summary[inst_name] = inst_results
         
@@ -160,13 +183,17 @@ def evaluate_benchmark(
     for inst, m_dict in results_summary.items():
         json_safe_dict[inst] = {}
         for m, data in m_dict.items():
+            valid_recs = [r for r in data["recovery_iters"] if r is not None]
+            unrec_cnt = len(data["recovery_iters"]) - len(valid_recs)
             json_safe_dict[inst][m] = {
                 "tour_lengths": [float(x) for x in data["tour_lengths"]],
                 "gaps": [float(x) for x in data["gaps"]],
                 "mean_gap": float(np.mean(data["gaps"])),
                 "std_gap": float(np.std(data["gaps"])),
                 "mean_tour": float(np.mean(data["tour_lengths"])),
-                "recovery_iters": [str(x) if x == float('inf') else float(x) for x in data["recovery_iters"]]
+                "recovery_iters": [float(x) if x is not None else None for x in data["recovery_iters"]],
+                "mean_recovery_iters": float(np.mean(valid_recs)) if len(valid_recs) > 0 else None,
+                "unrecovered_count": unrec_cnt,
             }
             
     with open(out_path, 'w', encoding='utf-8') as f:
@@ -174,6 +201,7 @@ def evaluate_benchmark(
         
     print(f"\nSaved raw evaluation summary to {out_path}")
     return results_summary
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

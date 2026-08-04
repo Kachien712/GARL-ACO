@@ -18,7 +18,9 @@
         1.0,
         1.0,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 1.0,
+      "unrecovered_count": 0
     },
     "ACO + Q-Learning": {
       "tour_lengths": [
@@ -36,9 +38,11 @@
       "mean_tour": 33775.34709965097,
       "recovery_iters": [
         1.0,
-        1.0,
+        0.0,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 0.6666666666666666,
+      "unrecovered_count": 0
     },
     "ACO + DDPG": {
       "tour_lengths": [
@@ -55,10 +59,12 @@
       "std_gap": 5.0284383001842805,
       "mean_tour": 34673.970324516515,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        2.0
+      ],
+      "mean_recovery_iters": 0.6666666666666666,
+      "unrecovered_count": 0
     }
   },
   "pr439": {
@@ -78,9 +84,11 @@
       "mean_tour": 571182.415139228,
       "recovery_iters": [
         1.0,
-        1.0,
+        null,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 1.0,
+      "unrecovered_count": 1
     },
     "ACO + Q-Learning": {
       "tour_lengths": [
@@ -97,10 +105,12 @@
       "std_gap": 8.464630913652915,
       "mean_tour": 207839.03332512663,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     },
     "ACO + DDPG": {
       "tour_lengths": [
@@ -117,10 +127,12 @@
       "std_gap": 1.2771663353527716,
       "mean_tour": 124642.57616119213,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     }
   },
   "rat575": {
@@ -139,10 +151,12 @@
       "std_gap": 0.4386674838310805,
       "mean_tour": 8118.825437848533,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     },
     "ACO + Q-Learning": {
       "tour_lengths": [
@@ -161,8 +175,10 @@
       "recovery_iters": [
         1.0,
         1.0,
-        1.0
-      ]
+        6.0
+      ],
+      "mean_recovery_iters": 2.6666666666666665,
+      "unrecovered_count": 0
     },
     "ACO + DDPG": {
       "tour_lengths": [
@@ -179,10 +195,12 @@
       "std_gap": 0.4250392114341019,
       "mean_tour": 8193.460065363,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     }
   },
   "u1060": {
@@ -201,10 +219,12 @@
       "std_gap": 17.31544753180668,
       "mean_tour": 1875850.019885666,
       "recovery_iters": [
-        1.0,
-        1.0,
+        null,
+        null,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 1.0,
+      "unrecovered_count": 2
     },
     "ACO + Q-Learning": {
       "tour_lengths": [
@@ -221,10 +241,12 @@
       "std_gap": 2.8581146115569642,
       "mean_tour": 469151.1377950297,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     },
     "ACO + DDPG": {
       "tour_lengths": [
@@ -241,10 +263,12 @@
       "std_gap": 3.872506267128335,
       "mean_tour": 290581.6891378569,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     }
   },
   "pcb1173": {
@@ -266,7 +290,9 @@
         1.0,
         1.0,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 1.0,
+      "unrecovered_count": 0
     },
     "ACO + Q-Learning": {
       "tour_lengths": [
@@ -283,10 +309,12 @@
       "std_gap": 2.9605427115133325,
       "mean_tour": 74235.90255677902,
       "recovery_iters": [
-        1.0,
-        1.0,
+        22.0,
+        21.0,
         1.0
-      ]
+      ],
+      "mean_recovery_iters": 14.666666666666666,
+      "unrecovered_count": 0
     },
     "ACO + DDPG": {
       "tour_lengths": [
@@ -303,10 +331,12 @@
       "std_gap": 1.9617143276991633,
       "mean_tour": 72522.85996576282,
       "recovery_iters": [
-        1.0,
-        1.0,
-        1.0
-      ]
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean_recovery_iters": 0.0,
+      "unrecovered_count": 0
     }
   }
 }
