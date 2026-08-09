@@ -12,6 +12,7 @@ BEST_KNOWN_SOLUTIONS = {
     "rat575": 6773,
     "u1060": 224094,
     "pcb1173": 56892,  # Held-out test set
+    "gr229": 134602
 }
 
 # Curriculum learning progression
