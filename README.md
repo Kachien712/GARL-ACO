@@ -165,8 +165,7 @@ python "GARL-ACO/GARL ACO/plot_convergence.py" --instance all
 │       ├── plot_convergence.py           # Script vẽ so sánh độ tụ 3 mô hình
 │       ├── plot_results.py               # Script vẽ bar chart tổng hợp
 │       └── train.py                       # Pipeline Curriculum Learning 4 giai đoạn
-├── README.md                              # Tài liệu kỹ thuật dự án
-└── BaoCaoThucNghiem.docx                  # Báo cáo thực nghiệm chi tiết
+└── README.md                              # Tài liệu kỹ thuật dự án (Technical Documentation)
 ```
 
 ---
