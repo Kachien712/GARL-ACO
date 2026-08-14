@@ -60,7 +60,7 @@ Vector trạng thái $s_t \in \mathbb{R}^{34}$ được trích xuất kết hợ
   $$\alpha \in [0.5, 3.0], \quad \beta \in [2.0, 6.0], \quad \rho \in [0.05, 0.50]$$
 * **Mạng Critic ($Q_\phi$)**: Kiến trúc $37 \to 128 \to 128 \to 1$ ước lượng hàm giá trị hành động tối ưu $Q(s, a)$.
 * **Lịch trình suy giảm nhiễu OU (Ornstein-Uhlenbeck Noise Decay)**:
-  $$\sigma(e) = \sigma_{start} + (\sigma_{end} - \sigma_{start}) \cdot \frac{e - 1}{E_{max} - 1}, \quad (\sigma: 0.35 \to 0.05)$$
+  $$\sigma(e) = \sigma_{\mathrm{start}} + (\sigma_{\mathrm{end}} - \sigma_{\mathrm{start}}) \cdot \frac{e - 1}{E_{\mathrm{max}} - 1}, \quad (\sigma: 0.35 \to 0.05)$$
   Giúp tác tử khám phá mạnh mẽ ở giai đoạn đầu để thoát khỏi bẫy biên dưới của $\beta$, sau đó hội tụ mượt mà và ổn định chính sách khai thác ở cuối quá trình học.
 
 ---
@@ -77,7 +77,7 @@ Quá trình huấn luyện trải qua 4 giai đoạn với độ phức tạp đ
 
 ## 📊 3. Kết quả Thực nghiệm (Experimental Results)
 
-Mô hình được đánh giá trên 5 bộ dữ liệu chuẩn TSPLIB dưới môi trường giao thông động hình sin ($\text{perturb\_ratio}=0.12$, $\text{amplitude}=0.5$, $\text{period}=20$ vòng lặp) với 3 seed độc lập:
+Mô hình được đánh giá trên 5 bộ dữ liệu chuẩn TSPLIB dưới môi trường giao thông động hình sin (`perturb_ratio = 0.12`, `perturb_amplitude = 0.5`, `perturb_period = 20` vòng lặp) với 3 seed độc lập:
 
 | Benchmark Instance | Số nút ($N$) | Lời giải Tối ưu ($L^*$) | Phương pháp | Chiều dài Tour TB ($\mu \pm \sigma$) | Optimality Gap (%) | Std Gap (%) | Thời gian phục hồi (Recovery) |
 |:---|:---:|:---:|:---|:---:|:---:|:---:|:---:|
