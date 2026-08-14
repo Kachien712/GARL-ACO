@@ -165,7 +165,7 @@ def run_ddpg_aco(
             aco.set_parameters(params["alpha"], params["beta"], params["rho"])
             
     return {
-        "method": "ACO + DDPG",
+        "method": "GARL-ACO",
         "best_length": aco.best_length,
         "best_tour": aco.best_tour,
         "convergence_curve": convergence_curve,

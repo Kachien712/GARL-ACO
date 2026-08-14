@@ -11,7 +11,7 @@ BEST_KNOWN_SOLUTIONS = {
     "pr439": 107217,
     "rat575": 6773,
     "u1060": 224094,
-    "pcb1173": 56892,  # Held-out test set
+    "pcb1173": 56892  # Held-out test set
 }
 
 # Curriculum learning progression
@@ -26,7 +26,7 @@ TEST_INSTANCE = "pcb1173"
 # ACO Hyperparameter bounds for continuous RL action space
 ACTION_BOUNDS = {
     "alpha": (0.5, 3.0),
-    "beta": (1.0, 6.0),
+    "beta": (2.0, 6.0),
     "rho": (0.05, 0.90),
 }
 
@@ -46,7 +46,9 @@ DDPG_CONFIG = {
     "buffer_capacity": 50000,
     "batch_size": 64,
     "ou_theta": 0.15,
-    "ou_sigma": 0.2,
+    "ou_sigma": 0.35,        # Initial sigma used when the agent/noise object is constructed
+    "ou_sigma_start": 0.35,  # NEW: exploration noise magnitude at episode 1 (high -> escape tanh saturation)
+    "ou_sigma_end": 0.05,    # NEW: exploration noise magnitude at the final episode (low -> stable, exploitative policy)
 }
 
 # Q-Learning Baseline Hyperparameters

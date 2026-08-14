@@ -26,8 +26,8 @@ def generate_plots(results_json_path: str = None):
         data = json.load(f)
         
     instances = list(data.keys())
-    methods = ["Fixed ACO", "ACO + Q-Learning", "ACO + DDPG"]
-    colors = {"Fixed ACO": "#e74c3c", "ACO + Q-Learning": "#f39c12", "ACO + DDPG": "#2ecc71"}
+    methods = ["Fixed ACO", "ACO + Q-Learning", "GARL-ACO"]
+    colors = {"Fixed ACO": "#e74c3c", "ACO + Q-Learning": "#f39c12", "GARL-ACO": "#2ecc71"}
     
     fig, ax = plt.subplots(figsize=(10, 6))
     x = np.arange(len(instances))

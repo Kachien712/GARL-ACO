@@ -121,9 +121,9 @@ def build_state_vector(
     tau_norm_entropy = float(np.clip(aco_stats["tau_entropy"] / np.log(max(2, N * (N - 1) // 2)), 0.0, 5.0))
     
     # Hyperparameters & Progress
-    norm_alpha = float((aco_stats["current_alpha"] - 0.5) / (3.0 - 0.5))
-    norm_beta = float((aco_stats["current_beta"] - 2.0) / (6.0 - 2.0))
-    norm_rho = float((aco_stats["current_rho"] - 0.05) / (0.50 - 0.05))
+    norm_alpha = float(np.clip((aco_stats["current_alpha"] - 0.5) / (3.0 - 0.5), 0.0, 1.0))
+    norm_beta  = float(np.clip((aco_stats["current_beta"]  - 2.0) / (6.0 - 2.0), 0.0, 1.0))
+    norm_rho   = float(np.clip((aco_stats["current_rho"]   - 0.05) / (0.50 - 0.05), 0.0, 1.0))
     progress_ratio = float(np.clip(current_iter / float(max_iter), 0.0, 1.0))
     
     search_16 = [

@@ -1,6 +1,5 @@
 """
-Evaluation Script for Standardized Benchmark Comparison across TSPLIB Instances.
-Computes gap%, std dev, and recovery metrics under dynamic traffic perturbations.
+Evaluation Script for v4 Architecture.
 """
 import os
 import sys
@@ -8,59 +7,43 @@ import json
 import argparse
 import numpy as np
 
-# Ensure root directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from ACO_ML.v3.config import (
-
+from ACO_ML.v4.config import (
     CHECKPOINT_DIR, BEST_KNOWN_SOLUTIONS, DEFAULT_N_ITER, TEST_INSTANCE
 )
-from ACO_ML.v3.data.tsp_loader import load_dataset_instance
-from ACO_ML.v3.data.solutions import get_gap, get_best_known
-from ACO_ML.v3.env.dynamic_tsp_env import DynamicTSPEnvironment
-from ACO_ML.v3.agent.ddpg_agent import DDPGAgent
-from ACO_ML.v3.agent.ql_agent import QLearningAgent
-from ACO_ML.v3.baselines import run_fixed_aco, run_ql_aco, run_ddpg_aco
+from ACO_ML.v4.data.tsp_loader import load_dataset_instance
+from ACO_ML.v4.data.solutions import get_gap, get_best_known
+from ACO_ML.v4.env.dynamic_tsp_env import DynamicTSPEnvironment
+from ACO_ML.v4.agent.ddpg_agent import DDPGAgent
+from ACO_ML.v4.agent.ql_agent import QLearningAgent
+from ACO_ML.v4.baselines import run_fixed_aco, run_ql_aco, run_ddpg_aco
 
 def compute_recovery_iterations(
     iter_best_curve: list,
     perturb_step: int = 30,
     recovery_threshold_ratio: float = 1.05
 ):
-    """
-    Recovery Metric Definition:
-    The number of ACO iterations required, starting from a perturbation event at step `perturb_step`,
-    for the iteration-best tour length to return to within X% (default recovery_threshold_ratio = 1.05, i.e., 5%)
-    of the pre-perturbation baseline tour length.
-    
-    If the tour length does not return to within the threshold before the end of the evaluation window,
-    the run is marked as unrecovered (returns None).
-    """
     if iter_best_curve is None or len(iter_best_curve) <= perturb_step:
         return None
         
-    # Pre-perturbation baseline (average of up to 5 steps prior to perturbation)
     start_idx = max(0, perturb_step - 5)
     pre_perturb_baseline = float(np.mean(iter_best_curve[start_idx:perturb_step]))
     target_length = pre_perturb_baseline * recovery_threshold_ratio
     
-    # Check if perturbation caused a performance drop (spike in iteration tour length)
     spike_detected = False
     for idx in range(perturb_step, len(iter_best_curve)):
         if iter_best_curve[idx] > target_length:
             spike_detected = True
             break
             
-    # If no performance drop above threshold occurred after perturbation, recovery is 0.0 (already optimal)
     if not spike_detected:
         return 0.0
         
-    # Find iteration where tour length recovers back to <= target_length after spike
     for idx in range(perturb_step, len(iter_best_curve)):
         if iter_best_curve[idx] <= target_length:
             return float(idx - perturb_step + 1)
             
-    # Explicit unrecovered marker (None)
     return None
 
 def evaluate_benchmark(
@@ -72,7 +55,7 @@ def evaluate_benchmark(
     if instances_to_eval is None:
         instances_to_eval = ["kroA200", "pr439", "rat575", "u1060", "pcb1173"]
         
-    print(f"\n=================== EVALUATION SUITE ===================")
+    print(f"\n=================== EVALUATION SUITE v4 ===================")
     print(f"Iterations per Instance: {n_iter} (Consistent for all instances)")
     print(f"Number of Evaluation Seeds: {n_runs}")
     print(f"Test Set (Zero-Shot): {TEST_INSTANCE}")
@@ -104,13 +87,12 @@ def evaluate_benchmark(
         inst_results = {
             "Fixed ACO": {"tour_lengths": [], "gaps": [], "curves": [], "recovery_iters": []},
             "ACO + Q-Learning": {"tour_lengths": [], "gaps": [], "curves": [], "recovery_iters": []},
-            "ACO + DDPG": {"tour_lengths": [], "gaps": [], "curves": [], "param_trajectories": [], "recovery_iters": []},
+            "GARL-ACO": {"tour_lengths": [], "gaps": [], "curves": [], "param_trajectories": [], "recovery_iters": []},
         }
         
         for run_idx in range(n_runs):
             seed = 1000 + run_idx
             
-            # Dynamic Traffic Environment for evaluation
             dynamic_env = DynamicTSPEnvironment(
                 base_dist_matrix=instance.dist_matrix,
                 perturb_ratio=0.10,
@@ -120,7 +102,6 @@ def evaluate_benchmark(
                 seed=seed
             )
             
-            # 1. Fixed ACO
             fixed_res = run_fixed_aco(instance, n_iter=n_iter, dynamic_env=dynamic_env, seed=seed)
             gap_fixed = get_gap(fixed_res["best_length"], inst_name)
             rec_fixed = compute_recovery_iterations(fixed_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
@@ -129,7 +110,6 @@ def evaluate_benchmark(
             inst_results["Fixed ACO"]["curves"].append(fixed_res["convergence_curve"])
             inst_results["Fixed ACO"]["recovery_iters"].append(rec_fixed)
             
-            # 2. ACO + Q-Learning
             ql_res = run_ql_aco(instance, ql_agent, n_iter=n_iter, dynamic_env=dynamic_env, evaluate=True, seed=seed)
             gap_ql = get_gap(ql_res["best_length"], inst_name)
             rec_ql = compute_recovery_iterations(ql_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
@@ -138,26 +118,23 @@ def evaluate_benchmark(
             inst_results["ACO + Q-Learning"]["curves"].append(ql_res["convergence_curve"])
             inst_results["ACO + Q-Learning"]["recovery_iters"].append(rec_ql)
             
-            # 3. ACO + DDPG (Strictly Deterministic actor, add_noise=False inside evaluate=True)
             ddpg_res = run_ddpg_aco(instance, ddpg_agent, n_iter=n_iter, dynamic_env=dynamic_env, evaluate=True, seed=seed)
             gap_ddpg = get_gap(ddpg_res["best_length"], inst_name)
             rec_ddpg = compute_recovery_iterations(ddpg_res["iter_best_curve"], perturb_step=30, recovery_threshold_ratio=1.05)
-            inst_results["ACO + DDPG"]["tour_lengths"].append(ddpg_res["best_length"])
-            inst_results["ACO + DDPG"]["gaps"].append(gap_ddpg)
-            inst_results["ACO + DDPG"]["curves"].append(ddpg_res["convergence_curve"])
-            inst_results["ACO + DDPG"]["param_trajectories"].append(ddpg_res["param_trajectory"])
-            inst_results["ACO + DDPG"]["recovery_iters"].append(rec_ddpg)
+            inst_results["GARL-ACO"]["tour_lengths"].append(ddpg_res["best_length"])
+            inst_results["GARL-ACO"]["gaps"].append(gap_ddpg)
+            inst_results["GARL-ACO"]["curves"].append(ddpg_res["convergence_curve"])
+            inst_results["GARL-ACO"]["param_trajectories"].append(ddpg_res["param_trajectory"])
+            inst_results["GARL-ACO"]["recovery_iters"].append(rec_ddpg)
             
-        # Print summary for this instance
         print("-" * 85)
         print(f"{'Method':19s} | {'Mean Tour Length':17s} | {'Mean Gap %':11s} | {'Std Gap %':9s} | {'Recovery Metric':20s}")
         print("-" * 85)
-        for method in ["Fixed ACO", "ACO + Q-Learning", "ACO + DDPG"]:
+        for method in ["Fixed ACO", "ACO + Q-Learning", "GARL-ACO"]:
             mean_len = float(np.mean(inst_results[method]["tour_lengths"]))
             mean_gap = float(np.mean(inst_results[method]["gaps"]))
             std_gap  = float(np.std(inst_results[method]["gaps"]))
             
-            # Handle recovery metric cleanly
             rec_list = inst_results[method]["recovery_iters"]
             valid_recs = [r for r in rec_list if r is not None]
             unrec_cnt = len(rec_list) - len(valid_recs)
@@ -175,10 +152,8 @@ def evaluate_benchmark(
             
         results_summary[inst_name] = inst_results
         
-    # Save benchmark results to JSON
     out_path = os.path.join(CHECKPOINT_DIR, output_json)
     
-    # Convert numpy types before JSON serialization
     json_safe_dict = {}
     for inst, m_dict in results_summary.items():
         json_safe_dict[inst] = {}
@@ -201,7 +176,6 @@ def evaluate_benchmark(
         
     print(f"\nSaved raw evaluation summary to {out_path}")
     return results_summary
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

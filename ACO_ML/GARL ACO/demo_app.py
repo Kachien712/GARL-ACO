@@ -23,12 +23,12 @@ from ACO_ML.v4.agent.ddpg_agent import DDPGAgent
 from ACO_ML.v4.agent.ql_agent import QLearningAgent
 
 st.set_page_config(
-    page_title="Adaptive Graph-Aware DDPG v4 for Dynamic TSP",
+    page_title="GARL-ACO Framework for Dynamic TSP",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.title(" Adaptive Graph-Aware DDPG v4 (18 Graph Features)")
+st.title(" GARL-ACO Framework (18 Graph Features)")
 st.markdown("### Research Demo — Dynamic Parameter Control with 18 Graph Structural Features")
 
 st.sidebar.header(" Control Panel")
@@ -41,7 +41,7 @@ instance_name = st.sidebar.selectbox(
 
 method = st.sidebar.radio(
     "Select Dynamic Control Method:",
-    options=["Fixed ACO", "ACO + Q-Learning", "ACO + DDPG (v4 Proposed)"],
+    options=["Fixed ACO", "ACO + Q-Learning", "GARL-ACO"],
     index=2
 )
 
@@ -122,7 +122,7 @@ if run_button:
         active_dist = dynamic_env.step_environment()
         aco.set_dist_matrix(active_dist)
         
-        if method == "ACO + DDPG (v4 Proposed)" and (it == 1 or it % CONTROL_FREQ == 0):
+        if method == "GARL-ACO" and (it == 1 or it % CONTROL_FREQ == 0):
             graph_stats = dynamic_env.get_change_stats()
             aco_stats = aco.get_search_stats()
             state_vec = build_state_vector(aco_stats, graph_stats, active_dist, current_iter=it, max_iter=n_iterations)
