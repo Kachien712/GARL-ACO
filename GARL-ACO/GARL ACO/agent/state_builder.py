@@ -3,11 +3,19 @@ Graph-Aware State Builder v4.1 (Fixed & Standardized).
 Generates 18 Non-Constant, Dynamically Scaled Graph Structural & Dynamic Traffic Features
 + 16 Search & Parameter Features.
 Total State Dimension = 34.
+
+v4.2: added build_search_only_state_vector() for the "NoGraph-DDPG" ablation
+(Ablation A) required by VNICT 2026 Review 1 — isolates the contribution of
+the 18 graph-aware features by giving the agent ONLY the 16 search/parameter
+features that any non-graph-aware RL controller could compute.
 """
 import numpy as np
 
 # Total State Dimension: 18 Graph Features + 16 Search Dynamics Features = 34
 STATE_DIM = 34
+
+# Ablation A state dimension: 16 Search & Parameter Features only (no graph features)
+SEARCH_ONLY_STATE_DIM = 16
 
 def extract_18_graph_features(dist_matrix: np.ndarray, graph_stats: dict) -> list:
     """
@@ -83,6 +91,54 @@ def extract_18_graph_features(dist_matrix: np.ndarray, graph_stats: dict) -> lis
     ]
     return graph_18
 
+def _baseline_tour_scale(dist_matrix: np.ndarray) -> float:
+    """Shared normalization scale used by both the full and search-only state builders,
+    so ablation results stay directly comparable to the full-state results."""
+    N = dist_matrix.shape[0]
+    i_idx, j_idx = np.triu_indices(N, k=1)
+    edge_dists = dist_matrix[i_idx, j_idx]
+    mean_edge_dist = float(np.mean(edge_dists)) if len(edge_dists) > 0 else 1.0
+    return max(1.0, N * mean_edge_dist * 0.75)
+
+def _compute_search_16(aco_stats: dict, dist_matrix: np.ndarray, current_iter: int, max_iter: int) -> list:
+    """
+    Computes the 16 Search & Parameter Features. Factored out from build_state_vector
+    so both the full 34-dim builder and the search-only 16-dim ablation builder
+    (build_search_only_state_vector) use IDENTICAL normalization/scaling logic —
+    this keeps the ablation a fair apples-to-apples comparison.
+    """
+    N = dist_matrix.shape[0]
+    baseline_tour_scale = _baseline_tour_scale(dist_matrix)
+
+    norm_best_len = float(np.clip(aco_stats["current_best_length"] / baseline_tour_scale, 0.0, 5.0))
+    norm_iter_best_len = float(np.clip(aco_stats["iter_best_length"] / baseline_tour_scale, 0.0, 5.0))
+    norm_iter_mean_len = float(np.clip(aco_stats["iter_mean_length"] / baseline_tour_scale, 0.0, 5.0))
+
+    conv_factor = float(np.clip(aco_stats["convergence_factor"], 0.0, 2.0))
+    imp_5 = float(np.clip(aco_stats["improvement_rate_5"], 0.0, 1.0))
+    imp_20 = float(np.clip(aco_stats["improvement_rate_20"], 0.0, 1.0))
+    norm_stagnation = float(np.clip(aco_stats["stagnation_counter"] / 50.0, 0.0, 1.0))
+
+    tau_mean = float(aco_stats["tau_mean"])
+    tau_norm_mean = float(np.clip(tau_mean, 0.0, 5.0))
+    tau_norm_min = float(np.clip(aco_stats["tau_min"] / (tau_mean + 1e-10), 0.0, 5.0))
+    tau_norm_max = float(np.clip(aco_stats["tau_max"] / (tau_mean + 1e-10), 0.0, 10.0))
+    tau_norm_std = float(np.clip(aco_stats["tau_std"] / (tau_mean + 1e-10), 0.0, 5.0))
+    tau_norm_entropy = float(np.clip(aco_stats["tau_entropy"] / np.log(max(2, N * (N - 1) // 2)), 0.0, 5.0))
+
+    # Hyperparameters & Progress
+    norm_alpha = float(np.clip((aco_stats["current_alpha"] - 0.5) / (3.0 - 0.5), 0.0, 1.0))
+    norm_beta  = float(np.clip((aco_stats["current_beta"]  - 2.0) / (6.0 - 2.0), 0.0, 1.0))
+    norm_rho   = float(np.clip((aco_stats["current_rho"]   - 0.05) / (0.50 - 0.05), 0.0, 1.0))
+    progress_ratio = float(np.clip(current_iter / float(max_iter), 0.0, 1.0))
+
+    return [
+        norm_best_len, norm_iter_best_len, norm_iter_mean_len,
+        conv_factor, imp_5, imp_20, norm_stagnation,
+        tau_norm_mean, tau_norm_min, tau_norm_max, tau_norm_std, tau_norm_entropy,
+        norm_alpha, norm_beta, norm_rho, progress_ratio
+    ]
+
 def build_state_vector(
     aco_stats: dict,
     graph_stats: dict,
@@ -94,44 +150,34 @@ def build_state_vector(
     Builds the 34-dimensional hybrid State Vector v4.1:
         18 Non-Constant Graph-Aware Features + 16 Search & Parameter Features.
     """
-    N = dist_matrix.shape[0]
-    i_idx, j_idx = np.triu_indices(N, k=1)
-    edge_dists = dist_matrix[i_idx, j_idx]
-    mean_edge_dist = float(np.mean(edge_dists)) if len(edge_dists) > 0 else 1.0
-    baseline_tour_scale = max(1.0, N * mean_edge_dist * 0.75)
-    
-    # 18 Graph Features
     graph_18 = extract_18_graph_features(dist_matrix, graph_stats)
-    
-    # 16 Search & Parameter Features
-    norm_best_len = float(np.clip(aco_stats["current_best_length"] / baseline_tour_scale, 0.0, 5.0))
-    norm_iter_best_len = float(np.clip(aco_stats["iter_best_length"] / baseline_tour_scale, 0.0, 5.0))
-    norm_iter_mean_len = float(np.clip(aco_stats["iter_mean_length"] / baseline_tour_scale, 0.0, 5.0))
-    
-    conv_factor = float(np.clip(aco_stats["convergence_factor"], 0.0, 2.0))
-    imp_5 = float(np.clip(aco_stats["improvement_rate_5"], 0.0, 1.0))
-    imp_20 = float(np.clip(aco_stats["improvement_rate_20"], 0.0, 1.0))
-    norm_stagnation = float(np.clip(aco_stats["stagnation_counter"] / 50.0, 0.0, 1.0))
-    
-    tau_mean = float(aco_stats["tau_mean"])
-    tau_norm_mean = float(np.clip(tau_mean, 0.0, 5.0))
-    tau_norm_min = float(np.clip(aco_stats["tau_min"] / (tau_mean + 1e-10), 0.0, 5.0))
-    tau_norm_max = float(np.clip(aco_stats["tau_max"] / (tau_mean + 1e-10), 0.0, 10.0))
-    tau_norm_std = float(np.clip(aco_stats["tau_std"] / (tau_mean + 1e-10), 0.0, 5.0))
-    tau_norm_entropy = float(np.clip(aco_stats["tau_entropy"] / np.log(max(2, N * (N - 1) // 2)), 0.0, 5.0))
-    
-    # Hyperparameters & Progress
-    norm_alpha = float(np.clip((aco_stats["current_alpha"] - 0.5) / (3.0 - 0.5), 0.0, 1.0))
-    norm_beta  = float(np.clip((aco_stats["current_beta"]  - 2.0) / (6.0 - 2.0), 0.0, 1.0))
-    norm_rho   = float(np.clip((aco_stats["current_rho"]   - 0.05) / (0.50 - 0.05), 0.0, 1.0))
-    progress_ratio = float(np.clip(current_iter / float(max_iter), 0.0, 1.0))
-    
-    search_16 = [
-        norm_best_len, norm_iter_best_len, norm_iter_mean_len,
-        conv_factor, imp_5, imp_20, norm_stagnation,
-        tau_norm_mean, tau_norm_min, tau_norm_max, tau_norm_std, tau_norm_entropy,
-        norm_alpha, norm_beta, norm_rho, progress_ratio
-    ]
-    
+    search_16 = _compute_search_16(aco_stats, dist_matrix, current_iter, max_iter)
     full_state = graph_18 + search_16
     return np.array(full_state, dtype=np.float32)
+
+def build_search_only_state_vector(
+    aco_stats: dict,
+    dist_matrix: np.ndarray,
+    current_iter: int,
+    max_iter: int = 200
+) -> np.ndarray:
+    """
+    Ablation A ("DDPG-Search" / "NoGraph-DDPG") state builder — 16-dimensional, search/parameter
+    features ONLY, with the 18 graph-aware structural/traffic features removed.
+    """
+    search_16 = _compute_search_16(aco_stats, dist_matrix, current_iter, max_iter)
+    return np.array(search_16, dtype=np.float32)
+
+GRAPH_ONLY_STATE_DIM = 18
+
+def build_graph_only_state_vector(
+    graph_stats: dict,
+    dist_matrix: np.ndarray
+) -> np.ndarray:
+    """
+    Ablation C ("DDPG-Graph") state builder — 18-dimensional, graph structural
+    and dynamic traffic features ONLY, without search dynamics metrics.
+    """
+    graph_18 = extract_18_graph_features(dist_matrix, graph_stats)
+    return np.array(graph_18, dtype=np.float32)
+

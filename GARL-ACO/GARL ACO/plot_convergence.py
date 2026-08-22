@@ -9,16 +9,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from ACO_ML.v4.config import CHECKPOINT_DIR, BASE_DIR, BEST_KNOWN_SOLUTIONS
-from ACO_ML.v4.data.tsp_loader import load_dataset_instance
-from ACO_ML.v4.data.solutions import get_gap
-from ACO_ML.v4.env.dynamic_tsp_env import DynamicTSPEnvironment
-from ACO_ML.v4.agent.ddpg_agent import DDPGAgent
-from ACO_ML.v4.agent.ql_agent import QLearningAgent
-from ACO_ML.v4.baselines import run_fixed_aco, run_ql_aco, run_ddpg_aco
-from ACO_ML.v4.evaluate import compute_recovery_iterations
+from config import CHECKPOINT_DIR, BASE_DIR, BEST_KNOWN_SOLUTIONS
+from data.tsp_loader import load_dataset_instance
+from data.solutions import get_gap
+from env.dynamic_tsp_env import DynamicTSPEnvironment
+from agent.ddpg_agent import DDPGAgent
+from agent.ql_agent import QLearningAgent
+from baselines import run_fixed_aco, run_ql_aco, run_ddpg_aco
+from evaluate import compute_recovery_iterations
 
 PLOTS_DIR = os.path.join(BASE_DIR, "plots")
 

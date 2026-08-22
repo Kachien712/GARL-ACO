@@ -1,7 +1,7 @@
 """
 Solutions module storing best-known tour lengths and gap metrics calculation.
 """
-from ACO_ML.v4.config import BEST_KNOWN_SOLUTIONS
+from config import BEST_KNOWN_SOLUTIONS
 
 def get_best_known(instance_name: str) -> float:
     clean_name = instance_name.split('.')[0]

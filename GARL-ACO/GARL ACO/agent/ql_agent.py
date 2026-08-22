@@ -5,7 +5,7 @@ Does not use graph-aware features to provide a fair non-graph RL baseline.
 import os
 import pickle
 import numpy as np
-from ACO_ML.v4.config import QL_CONFIG, ACTION_BOUNDS
+from config import QL_CONFIG, ACTION_BOUNDS
 
 class QLearningAgent:
     def __init__(self):

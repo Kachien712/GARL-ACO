@@ -9,18 +9,18 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from ACO_ML.v4.config import (
+from config import (
     CHECKPOINT_DIR, BEST_KNOWN_SOLUTIONS, CONTROL_FREQ, FIXED_ACO_PARAMS
 )
-from ACO_ML.v4.data.tsp_loader import load_dataset_instance
-from ACO_ML.v4.data.solutions import get_gap
-from ACO_ML.v4.env.dynamic_tsp_env import DynamicTSPEnvironment
-from ACO_ML.v4.aco.aco_core import VectorizedACO
-from ACO_ML.v4.agent.state_builder import build_state_vector
-from ACO_ML.v4.agent.ddpg_agent import DDPGAgent
-from ACO_ML.v4.agent.ql_agent import QLearningAgent
+from data.tsp_loader import load_dataset_instance
+from data.solutions import get_gap
+from env.dynamic_tsp_env import DynamicTSPEnvironment
+from aco.aco_core import VectorizedACO
+from agent.state_builder import build_state_vector
+from agent.ddpg_agent import DDPGAgent
+from agent.ql_agent import QLearningAgent
 
 st.set_page_config(
     page_title="GARL-ACO Framework for Dynamic TSP",

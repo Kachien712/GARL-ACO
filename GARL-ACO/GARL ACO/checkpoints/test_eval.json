@@ -1,0 +1,215 @@
+{
+  "kroA200": {
+    "Fixed ACO": {
+      "tour_lengths": [
+        64645.24825828147,
+        61616.34239887688
+      ],
+      "gaps": [
+        120.12138469858851,
+        109.80775810023454
+      ],
+      "mean_gap": 114.96457139941153,
+      "std_gap": 5.156813299176989,
+      "mean_tour": 63130.795328579174,
+      "recovery_iters": [
+        null,
+        null
+      ],
+      "mean_recovery_iters": null,
+      "unrecovered_count": 2,
+      "total_runtimes": [
+        0.32546990003902465,
+        0.3331188999582082
+      ],
+      "mean_runtime_sec": 0.3292943999986164,
+      "std_runtime_sec": 0.003824499959591776,
+      "control_overheads": [
+        0.0,
+        0.0
+      ],
+      "mean_control_overhead_sec": 0.0,
+      "std_control_overhead_sec": 0.0,
+      "control_latencies_ms": [
+        0.0,
+        0.0
+      ],
+      "mean_control_latency_ms": 0.0,
+      "std_control_latency_ms": 0.0
+    },
+    "ACO + Q-Learning": {
+      "tour_lengths": [
+        81062.70738925415,
+        86467.393614965
+      ],
+      "gaps": [
+        176.02392872941348,
+        194.42724603297805
+      ],
+      "mean_gap": 185.22558738119577,
+      "std_gap": 9.201658651782282,
+      "mean_tour": 83765.05050210957,
+      "recovery_iters": [
+        null,
+        null
+      ],
+      "mean_recovery_iters": null,
+      "unrecovered_count": 2,
+      "total_runtimes": [
+        0.30310179997468367,
+        0.29439469997305423
+      ],
+      "mean_runtime_sec": 0.29874824997386895,
+      "std_runtime_sec": 0.004353550000814721,
+      "control_overheads": [
+        0.0014516000519506633,
+        0.001418599917087704
+      ],
+      "mean_control_overhead_sec": 0.0014350999845191836,
+      "std_control_overhead_sec": 1.6500067431479692e-05,
+      "control_latencies_ms": [
+        0.4838666839835544,
+        0.47286663902923465
+      ],
+      "mean_control_latency_ms": 0.4783666615063945,
+      "std_control_latency_ms": 0.005500022477159888
+    },
+    "GARL-ACO": {
+      "tour_lengths": [
+        50780.79140621949,
+        50472.80748077654
+      ],
+      "gaps": [
+        72.9119838130601,
+        71.86327799229277
+      ],
+      "mean_gap": 72.38763090267643,
+      "std_gap": 0.5243529103836693,
+      "mean_tour": 50626.799443498014,
+      "recovery_iters": [
+        null,
+        null
+      ],
+      "mean_recovery_iters": null,
+      "unrecovered_count": 2,
+      "total_runtimes": [
+        0.3825467000133358,
+        0.3697482999996282
+      ],
+      "mean_runtime_sec": 0.376147500006482,
+      "std_runtime_sec": 0.006399200006853789,
+      "control_overheads": [
+        0.008007699972949922,
+        0.006251899991184473
+      ],
+      "mean_control_overhead_sec": 0.0071297999820671976,
+      "std_control_overhead_sec": 0.0008778999908827245,
+      "control_latencies_ms": [
+        2.669233324316641,
+        2.0839666637281575
+      ],
+      "mean_control_latency_ms": 2.376599994022399,
+      "std_control_latency_ms": 0.29263333029424166
+    },
+    "NoGraph-DDPG": {
+      "tour_lengths": [
+        53242.38441481319,
+        53319.368669539064
+      ],
+      "gaps": [
+        81.29387229233585,
+        81.55600881755333
+      ],
+      "mean_gap": 81.42494055494458,
+      "std_gap": 0.1310682626087427,
+      "mean_tour": 53280.87654217613,
+      "recovery_iters": [
+        null,
+        null
+      ],
+      "mean_recovery_iters": null,
+      "unrecovered_count": 2,
+      "total_runtimes": [
+        0.38978209998458624,
+        0.36294589994940907
+      ],
+      "mean_runtime_sec": 0.37636399996699765,
+      "std_runtime_sec": 0.013418100017588586,
+      "control_overheads": [
+        0.00408619997324422,
+        0.004042799933813512
+      ],
+      "mean_control_overhead_sec": 0.004064499953528866,
+      "std_control_overhead_sec": 2.1700019715353847e-05,
+      "control_latencies_ms": [
+        1.3620666577480733,
+        1.3475999779378374
+      ],
+      "mean_control_latency_ms": 1.3548333178429552,
+      "std_control_latency_ms": 0.007233339905117986
+    },
+    "Discrete-DQN": {
+      "tour_lengths": [
+        43286.55894128846,
+        41709.281767447406
+      ],
+      "gaps": [
+        47.39362211008056,
+        42.02288806676452
+      ],
+      "mean_gap": 44.70825508842254,
+      "std_gap": 2.685367021658017,
+      "mean_tour": 42497.92035436793,
+      "recovery_iters": [
+        null,
+        null
+      ],
+      "mean_recovery_iters": null,
+      "unrecovered_count": 2,
+      "total_runtimes": [
+        0.3660898999660276,
+        0.3591469000093639
+      ],
+      "mean_runtime_sec": 0.36261839998769574,
+      "std_runtime_sec": 0.003471499978331849,
+      "control_overheads": [
+        0.007933999935630709,
+        0.006060799991246313
+      ],
+      "mean_control_overhead_sec": 0.006997399963438511,
+      "std_control_overhead_sec": 0.000936599972192198,
+      "control_latencies_ms": [
+        2.6446666452102363,
+        2.020266663748771
+      ],
+      "mean_control_latency_ms": 2.3324666544795036,
+      "std_control_latency_ms": 0.3121999907307327
+    },
+    "significance": {
+      "vs_Fixed_ACO": {
+        "test_used": "Paired Student's t-test (fallback)",
+        "p_value": 0.06899417143477224,
+        "significant_at_0.05": false,
+        "statistic": -9.190999366068123
+      },
+      "vs_QL": {
+        "test_used": "Paired Student's t-test (fallback)",
+        "p_value": 0.05473783420966468,
+        "significant_at_0.05": false,
+        "statistic": -11.601667935236414
+      },
+      "vs_NoGraph_DDPG": {
+        "test_used": "Paired Student's t-test (fallback)",
+        "p_value": 0.046089472140694615,
+        "significant_at_0.05": true,
+        "statistic": -13.78855310854107
+      },
+      "vs_Discrete_DQN": {
+        "test_used": "Paired Student's t-test (fallback)",
+        "p_value": 0.049602247516595595,
+        "significant_at_0.05": true,
+        "statistic": 12.80851229515174
+      }
+    }
+  }
+}

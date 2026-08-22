@@ -4,14 +4,24 @@ Supports continuous parameter control with 34-dim Graph-Aware State input.
 Enforces realistic ACO parameter bounds: alpha in [0.5, 3.0], beta in [2.0, 6.0], rho in [0.05, 0.50].
 """
 import os
+import sys
 import random
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from ACO_ML.v4.config import DDPG_CONFIG
-from ACO_ML.v4.agent.state_builder import STATE_DIM
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+try:
+    from config import DDPG_CONFIG
+    from agent.state_builder import STATE_DIM
+except ImportError:
+    from ACO_ML.v4.config import DDPG_CONFIG
+    from ACO_ML.v4.agent.state_builder import STATE_DIM
 
 device = torch.device("cpu")
 
@@ -84,10 +94,10 @@ class Actor(nn.Module):
 
     def _init_weights(self):
         """Initialize output layer to near-zero to prevent tanh saturation.
-        This ensures all 3 action dims start near tanh(0)=0 → midpoint of each parameter range:
-          alpha → (0.5+3.0)/2 = 1.75
-          beta  → (2.0+6.0)/2 = 4.0   (NOT stuck at 2.0!)
-          rho   → (0.05+0.50)/2 = 0.275
+        This ensures all 3 action dims start near tanh(0)=0 -> midpoint of each parameter range:
+          alpha -> (0.5+3.0)/2 = 1.75
+          beta  -> (2.0+6.0)/2 = 4.0   (NOT stuck at 2.0!)
+          rho   -> (0.05+0.50)/2 = 0.275
         """
         nn.init.uniform_(self.fc3.weight, -0.003, 0.003)
         nn.init.zeros_(self.fc3.bias)

@@ -5,7 +5,7 @@ import os
 import numpy as np
 import networkx as nx
 from scipy.spatial.distance import cdist
-from ACO_ML.v4.config import DATASET_DIR
+from config import DATASET_DIR
 
 class TSPInstance:
     def __init__(self, name: str, coords: np.ndarray, dist_matrix: np.ndarray, graph: nx.Graph):

@@ -11,7 +11,8 @@ BEST_KNOWN_SOLUTIONS = {
     "pr439": 107217,
     "rat575": 6773,
     "u1060": 224094,
-    "pcb1173": 56892  # Held-out test set
+    "pcb1173": 56892,  # Held-out test set
+    "gr229": 134602
 }
 
 # Curriculum learning progression
@@ -63,3 +64,8 @@ QL_CONFIG = {
 # Environment & Control Settings
 CONTROL_FREQ = 5          # Number of ACO iterations per RL decision step
 DEFAULT_N_ITER = 200      # Standard evaluation iterations per instance
+
+# State Vector Dimensions
+STATE_DIM = 34
+SEARCH_ONLY_STATE_DIM = 16
+GRAPH_ONLY_STATE_DIM = 18
