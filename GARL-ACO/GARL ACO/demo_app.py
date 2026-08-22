@@ -18,9 +18,10 @@ from data.tsp_loader import load_dataset_instance
 from data.solutions import get_gap
 from env.dynamic_tsp_env import DynamicTSPEnvironment
 from aco.aco_core import VectorizedACO
-from agent.state_builder import build_state_vector
+from agent.state_builder import build_state_vector, build_search_only_state_vector
 from agent.ddpg_agent import DDPGAgent
 from agent.ql_agent import QLearningAgent
+from agent.dqn_agent import DQNAgent
 
 st.set_page_config(
     page_title="GARL-ACO Framework for Dynamic TSP",
@@ -28,10 +29,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.title(" GARL-ACO Framework (18 Graph Features)")
-st.markdown("### Research Demo — Dynamic Parameter Control with 18 Graph Structural Features")
+st.title("🐜 GARL-ACO Framework: Adaptive DRL-Driven Ant Colony Optimization")
+st.markdown("### Research & Interactive Demo — Dynamic TSP with Graph-Aware Reinforcement Learning")
 
-st.sidebar.header(" Control Panel")
+st.sidebar.header("🕹️ Control Panel")
 
 instance_name = st.sidebar.selectbox(
     "Select TSP Instance:",
@@ -41,7 +42,7 @@ instance_name = st.sidebar.selectbox(
 
 method = st.sidebar.radio(
     "Select Dynamic Control Method:",
-    options=["Fixed ACO", "ACO + Q-Learning", "GARL-ACO"],
+    options=["Fixed ACO", "ACO + Q-Learning", "GARL-ACO (Proposed)", "NoGraph-DDPG (Ablation A)", "Discrete-DQN (Ablation B)"],
     index=2
 )
 
@@ -82,12 +83,22 @@ with right_col:
     param_plot_spot = st.empty()
 
 if run_button:
-    st.toast(f"Starting v4 simulation on {instance_name} with {method}...", icon="🚀")
+    st.toast(f"Starting simulation on {instance_name} with {method}...", icon="🚀")
     
-    ddpg_agent = DDPGAgent()
+    ddpg_agent = DDPGAgent(state_dim=34)
     ddpg_path = os.path.join(CHECKPOINT_DIR, "ddpg_agent.pt")
     if os.path.exists(ddpg_path):
         ddpg_agent.load(ddpg_path)
+
+    nograph_agent = DDPGAgent(state_dim=16)
+    nograph_path = os.path.join(CHECKPOINT_DIR, "ddpg_agent_nograph.pt")
+    if os.path.exists(nograph_path):
+        nograph_agent.load(nograph_path)
+
+    dqn_agent = DQNAgent(state_dim=34)
+    dqn_path = os.path.join(CHECKPOINT_DIR, "dqn_agent.pt")
+    if os.path.exists(dqn_path):
+        dqn_agent.load(dqn_path)
         
     ql_agent = QLearningAgent()
     ql_path = os.path.join(CHECKPOINT_DIR, "ql_agent.pkl")
@@ -97,7 +108,7 @@ if run_button:
     dynamic_env = DynamicTSPEnvironment(
         base_dist_matrix=instance.dist_matrix,
         perturb_ratio=0.12,
-        perturb_amplitude=0.5,
+        perturb_amplitude=0.4,
         perturb_period=20,
         enabled=enable_dynamic_traffic,
         seed=42
@@ -122,14 +133,27 @@ if run_button:
         active_dist = dynamic_env.step_environment()
         aco.set_dist_matrix(active_dist)
         
-        if method == "GARL-ACO" and (it == 1 or it % CONTROL_FREQ == 0):
+        if "GARL-ACO" in method and (it == 1 or it % CONTROL_FREQ == 0):
             graph_stats = dynamic_env.get_change_stats()
             aco_stats = aco.get_search_stats()
             state_vec = build_state_vector(aco_stats, graph_stats, active_dist, current_iter=it, max_iter=n_iterations)
             _, params = ddpg_agent.select_action(state_vec, add_noise=False)
             aco.set_parameters(params["alpha"], params["beta"], params["rho"])
+
+        elif "NoGraph" in method and (it == 1 or it % CONTROL_FREQ == 0):
+            aco_stats = aco.get_search_stats()
+            state_vec = build_search_only_state_vector(aco_stats, active_dist, current_iter=it, max_iter=n_iterations)
+            _, params = nograph_agent.select_action(state_vec, add_noise=False)
+            aco.set_parameters(params["alpha"], params["beta"], params["rho"])
+
+        elif "Discrete-DQN" in method and (it == 1 or it % CONTROL_FREQ == 0):
+            graph_stats = dynamic_env.get_change_stats()
+            aco_stats = aco.get_search_stats()
+            state_vec = build_state_vector(aco_stats, graph_stats, active_dist, current_iter=it, max_iter=n_iterations)
+            _, params = dqn_agent.select_action(state_vec, evaluate=True)
+            aco.set_parameters(params["alpha"], params["beta"], params["rho"])
             
-        elif method == "ACO + Q-Learning" and (it == 1 or it % CONTROL_FREQ == 0):
+        elif "Q-Learning" in method and (it == 1 or it % CONTROL_FREQ == 0):
             aco_stats = aco.get_search_stats()
             ql_state = ql_agent.discretize_state(aco_stats, current_iter=it, max_iter=n_iterations)
             _, params = ql_agent.select_action(ql_state, evaluate=True)
